@@ -6,9 +6,20 @@
 </head>
 <body>
 
-    <div th:each = "post : ${allPosts}">
+    <div th:each = "post : ${posts}">
         <span th:text = "${post.getTitle()}"></span>
         <p th:text = "${post.getBody()}"></p>
+
+        <form th:action="'/posts/edit/' + ${post.getId()}" method="get">
+            <button>Edit</button>
+        </form>
+
+        <form th:action="'/posts/delete/' + ${post.getId()}" method="post">
+
+            <button>Delete</button>
+        </form>
+
+        <br>
 
 
     </div>
