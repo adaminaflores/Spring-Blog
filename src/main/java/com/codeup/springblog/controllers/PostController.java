@@ -1,19 +1,25 @@
 package com.codeup.springblog.controllers;
 
 import com.codeup.springblog.interfaces.PostRepository;
+import com.codeup.springblog.interfaces.UserRepository;
+import com.codeup.springblog.models.Post;
+import com.codeup.springblog.services.EmailService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 
 @Controller
 public class PostController {
 
     private final PostRepository postDao;
+    private final UserRepository userDao;
+    private final EmailService emailService;
 
-    public PostController(PostRepository postDao) {
+    public PostController(PostRepository postDao, UserRepository userDao, EmailService emailService)
+    {
         this.postDao = postDao;
+        this.userDao = userDao;
+        this.emailService = emailService;
     }
 
 
@@ -59,15 +65,25 @@ public class PostController {
 
 
     @GetMapping("/posts/create")
-    @ResponseBody
-    public String createForm(){
-        return "view the form for creating a post";
+    public String createForm(Model model){
+        model.addAttribute("post", new Post());
+        return "posts/create";
     }
 
     @PostMapping("/posts/create")
-    @ResponseBody
-    public String createPost(){
-        return "create a new post";
+    public String createPost(@ModelAttribute Post post){
+        post.setUser(userDao.getById(2L));
+
+        String emailSubject = post.getUser().getUsername() + ", your post has been created!";
+
+        String emailBody = "Congratulations - your latest blog post is up and ready to view on your blogging website. Your post read: " + post.getBody();
+
+        emailService.prepareAndSend(post, emailSubject, emailBody);
+        postDao.save(post);
+
+
+        return "redirect:/posts";
+
     }
 
 }
